@@ -1,0 +1,2182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Resume AI Analyzer</title>
+
+
+    <!-- Bootstrap -->
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+
+    <!-- Bootstrap Icons -->
+
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    >
+
+
+    <style>
+
+        body {
+
+            background: #f5f7fb;
+
+            font-family: Arial, Helvetica, sans-serif;
+
+            color: #212529;
+
+        }
+
+
+        .navbar {
+
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+
+        }
+
+
+        .navbar-brand {
+
+            font-weight: 700;
+
+        }
+
+
+        .hero {
+
+            padding: 45px 0 30px;
+
+        }
+
+
+        .hero h1 {
+
+            font-weight: 700;
+
+        }
+
+
+        .card {
+
+            border: none;
+
+            border-radius: 15px;
+
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.07);
+
+        }
+
+
+        .upload-box {
+
+            border: 2px dashed #ced4da;
+
+            border-radius: 12px;
+
+            padding: 30px;
+
+            text-align: center;
+
+            background: #fafbfc;
+
+        }
+
+
+        .upload-icon {
+
+            font-size: 50px;
+
+            color: #0d6efd;
+
+        }
+
+
+        textarea {
+
+            min-height: 250px;
+
+            resize: vertical;
+
+        }
+
+
+        .score-main {
+
+            font-size: 3.5rem;
+
+            font-weight: 700;
+
+            color: #0d6efd;
+
+        }
+
+
+        .score-circle {
+
+            width: 150px;
+
+            height: 150px;
+
+            border-radius: 50%;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            margin: auto;
+
+            background: #e7f1ff;
+
+        }
+
+
+        .section-score {
+
+            font-size: 1.4rem;
+
+            font-weight: 700;
+
+        }
+
+
+        .skill-badge {
+
+            display: inline-block;
+
+            margin: 4px;
+
+            padding: 8px 13px;
+
+            border-radius: 20px;
+
+            background: #e7f1ff;
+
+            color: #0d6efd;
+
+            font-weight: 500;
+
+        }
+
+
+        .missing-badge {
+
+            display: inline-block;
+
+            margin: 4px;
+
+            padding: 8px 13px;
+
+            border-radius: 20px;
+
+            background: #fff0f0;
+
+            color: #dc3545;
+
+            border: 1px solid #f5c2c7;
+
+        }
+
+
+        .job-card {
+
+            transition: transform 0.2s ease;
+
+        }
+
+
+        .job-card:hover {
+
+            transform: translateY(-4px);
+
+        }
+
+
+        .match-number {
+
+            font-size: 2rem;
+
+            font-weight: 700;
+
+            color: #198754;
+
+        }
+
+
+        .suggestion-item {
+
+            padding: 14px;
+
+            border-left: 4px solid #0d6efd;
+
+            background: #f8f9fa;
+
+            margin-bottom: 10px;
+
+            border-radius: 6px;
+
+        }
+
+
+        .course-card {
+
+            border-left: 4px solid #198754;
+
+        }
+
+
+        .stat-title {
+
+            color: #6c757d;
+
+            font-size: 0.9rem;
+
+        }
+
+
+        footer {
+
+            margin-top: 50px;
+
+            padding: 25px;
+
+            text-align: center;
+
+            color: #6c757d;
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     NAVBAR
+====================================================== -->
+
+<nav class="navbar navbar-expand-lg bg-white">
+
+    <div class="container">
+
+        <a
+            class="navbar-brand text-primary"
+            href="/"
+        >
+
+            <i class="bi bi-robot"></i>
+
+            Resume AI Analyzer
+
+        </a>
+
+    </div>
+
+</nav>
+
+
+
+<!-- =====================================================
+     HERO
+====================================================== -->
+
+<section class="hero">
+
+    <div class="container">
+
+        <div class="text-center">
+
+            <h1>
+
+                Resume Screening & Job Recommendation
+
+            </h1>
+
+
+            <p class="text-muted mt-2">
+
+                AI-powered resume analysis using NLP,
+                Machine Learning and TF-IDF.
+
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     MAIN
+====================================================== -->
+
+<div class="container pb-5">
+
+
+    <!-- ERROR -->
+
+    {% if error %}
+
+    <div class="alert alert-danger">
+
+        <i class="bi bi-exclamation-triangle-fill"></i>
+
+        {{ error }}
+
+    </div>
+
+    {% endif %}
+
+
+
+    <!-- =================================================
+         RESUME INPUT
+    ================================================== -->
+
+    <div class="card p-4 mb-4">
+
+        <h4 class="mb-4">
+
+            <i class="bi bi-file-earmark-text"></i>
+
+            Analyze Your Resume
+
+        </h4>
+
+
+        <form
+            method="POST"
+            enctype="multipart/form-data"
+        >
+
+
+            <!-- PDF UPLOAD -->
+
+            <div class="upload-box mb-4">
+
+                <i class="bi bi-file-earmark-pdf upload-icon"></i>
+
+
+                <h5 class="mt-3">
+
+                    Upload PDF Resume
+
+                </h5>
+
+
+                <p class="text-muted">
+
+                    Upload your resume in PDF format.
+
+                </p>
+
+
+                <input
+                    type="file"
+                    name="resume_file"
+                    class="form-control"
+                    accept=".pdf,application/pdf"
+                >
+
+            </div>
+
+
+
+            <!-- OR -->
+
+            <div class="text-center text-muted mb-3">
+
+                — OR —
+
+            </div>
+
+
+
+            <!-- TEXT -->
+
+            <label
+                for="resume_text"
+                class="form-label fw-bold"
+            >
+
+                Paste Resume Text
+
+            </label>
+
+
+            <textarea
+                id="resume_text"
+                name="resume_text"
+                class="form-control mb-3"
+                placeholder="Paste your resume text here..."
+            >{{ resume_text }}</textarea>
+
+
+
+            <!-- BUTTON -->
+
+            <button
+                type="submit"
+                class="btn btn-primary btn-lg"
+            >
+
+                <i class="bi bi-cpu"></i>
+
+                Analyze Resume
+
+            </button>
+
+        </form>
+
+    </div>
+
+
+
+    <!-- =================================================
+         UPLOAD SUCCESS
+    ================================================== -->
+
+    {% if uploaded_filename %}
+
+    <div class="alert alert-success">
+
+        <i class="bi bi-check-circle-fill"></i>
+
+        Resume uploaded successfully:
+
+        <strong>
+
+            {{ uploaded_filename }}
+
+        </strong>
+
+    </div>
+
+    {% endif %}
+
+
+
+    <!-- =================================================
+         RESULTS
+    ================================================== -->
+
+    {% if section_scores %}
+
+
+    <!-- =================================================
+         OVERALL SCORE
+    ================================================== -->
+
+    <div class="card p-4 mb-4 text-center">
+
+        <h3 class="fw-bold">
+
+            <i class="bi bi-bar-chart-fill"></i>
+
+            Overall Resume Score
+
+        </h3>
+
+
+        <div class="score-circle mt-3 mb-3">
+
+            <div class="score-main">
+
+                {{ overall_score }}
+
+            </div>
+
+        </div>
+
+
+        <h5>
+
+            out of 100
+
+        </h5>
+
+
+        <p class="text-muted">
+
+            Combined score based on resume sections,
+            skills and job compatibility.
+
+        </p>
+
+    </div>
+
+
+
+    <!-- =================================================
+         SECTION SCORES
+    ================================================== -->
+
+    <div class="card p-4 mb-4">
+
+        <h3 class="fw-bold mb-4">
+
+            <i class="bi bi-clipboard-data"></i>
+
+            Section-wise Resume Score
+
+        </h3>
+
+
+        <div class="row g-4">
+
+
+            {% for section, score in section_scores.items() %}
+
+
+            <div class="col-md-6 col-lg-4">
+
+                <div class="p-3 border rounded">
+
+                    <div class="d-flex justify-content-between">
+
+                        <strong>
+
+                            {{ section }}
+
+                        </strong>
+
+
+                        <span class="section-score">
+
+                            {{ score }}%
+
+                        </span>
+
+                    </div>
+
+
+                    <div
+                        class="progress mt-2"
+                        style="height: 10px;"
+                    >
+
+                        <div
+                            class="progress-bar"
+                            role="progressbar"
+                            style="width: {{ score }}%;"
+                        ></div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            {% endfor %}
+
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =================================================
+         BEST JOB
+    ================================================== -->
+
+    {% if best_job %}
+
+    <div class="row g-4 mb-4">
+
+
+        <div class="col-md-6">
+
+            <div class="card p-4 text-center h-100">
+
+                <div class="stat-title">
+
+                    BEST JOB MATCH
+
+                </div>
+
+
+                <h2 class="mt-3">
+
+                    {{ best_job }}
+
+                </h2>
+
+
+                <div class="match-number">
+
+                    {{ best_match }}%
+
+                </div>
+
+
+                <p class="text-muted">
+
+                    Based on TF-IDF and Cosine Similarity
+
+                </p>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="col-md-6">
+
+            <div class="card p-4 h-100">
+
+                <h4>
+
+                    <i class="bi bi-lightbulb"></i>
+
+                    Quick Improvement
+
+                </h4>
+
+
+                <p class="text-muted">
+
+                    Focus on the missing skills below
+                    to improve compatibility with your
+                    best matching role.
+
+                </p>
+
+
+                {% if missing_skills %}
+
+                {% for skill in missing_skills %}
+
+                <span class="missing-badge">
+
+                    {{ skill }}
+
+                </span>
+
+                {% endfor %}
+
+                {% else %}
+
+                <p class="text-success">
+
+                    <i class="bi bi-check-circle-fill"></i>
+
+                    No major missing skills detected.
+
+                </p>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+    {% endif %}
+
+
+
+    <!-- =================================================
+         DETECTED SKILLS
+    ================================================== -->
+
+    {% if extracted_skills %}
+
+    <div class="card p-4 mb-4">
+
+        <h3 class="fw-bold mb-3">
+
+            <i class="bi bi-stars"></i>
+
+            Skills Detected
+
+        </h3>
+
+
+        <p class="text-muted">
+
+            Technical skills identified from your resume.
+
+        </p>
+
+
+        <div>
+
+            {% for skill in extracted_skills %}
+
+            <span class="skill-badge">
+
+                {{ skill }}
+
+            </span>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+
+    <!-- =================================================
+         MISSING SKILLS
+    ================================================== -->
+
+    {% if missing_skills %}
+
+    <div class="card p-4 mb-4">
+
+        <h3 class="fw-bold text-danger">
+
+            <i class="bi bi-exclamation-circle"></i>
+
+            Skills You Can Improve
+
+        </h3>
+
+
+        <p class="text-muted">
+
+            These skills are associated with your
+            best matching job role but were not
+            detected in your resume.
+
+        </p>
+
+
+        {% for skill in missing_skills %}
+
+        <span class="missing-badge">
+
+            {{ skill }}
+
+        </span>
+
+        {% endfor %}
+
+    </div>
+
+    {% endif %}
+
+
+
+    <!-- =================================================
+         SUGGESTIONS
+    ================================================== -->
+
+    {% if suggestions %}
+
+    <div class="card p-4 mb-4">
+
+        <h3 class="fw-bold mb-4">
+
+            <i class="bi bi-lightbulb-fill text-warning"></i>
+
+            Suggestions to Improve Your Resume
+
+        </h3>
+
+
+        {% for suggestion in suggestions %}
+
+        <div class="suggestion-item">
+
+            <i class="bi bi-arrow-right-circle text-primary"></i>
+
+            {{ suggestion }}
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% endif %}
+
+
+
+    <!-- =================================================
+         COURSE RECOMMENDATIONS
+    ================================================== -->
+
+    {% if course_recommendations %}
+
+    <div class="card p-4 mb-4">
+
+        <h3 class="fw-bold mb-4">
+
+            <i class="bi bi-mortarboard-fill"></i>
+
+            Recommended Learning
+
+        </h3>
+
+
+        <p class="text-muted">
+
+            Courses and learning topics based on
+            the skills missing from your best job match.
+
+        </p>
+
+
+        <div class="row g-3">
+
+
+            {% for course in course_recommendations %}
+
+            <div class="col-md-6 col-lg-4">
+
+                <div class="course-card border rounded p-3 h-100">
+
+                    <h5>
+
+                        {{ course.course }}
+
+                    </h5>
+
+
+                    <p class="mb-1">
+
+                        <strong>Skill:</strong>
+
+                        {{ course.skill }}
+
+                    </p>
+
+
+                    <p class="text-muted mb-0">
+
+                        {{ course.provider }}
+
+                    </p>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+
+    <!-- =================================================
+         JOB RECOMMENDATIONS
+    ================================================== -->
+
+    {% if results %}
+
+    <div class="mb-4">
+
+        <h3 class="fw-bold">
+
+            <i class="bi bi-briefcase-fill"></i>
+
+            Job Recommendations
+
+        </h3>
+
+
+        <p class="text-muted">
+
+            Job roles ranked according to resume
+            and job-description similarity.
+
+        </p>
+
+    </div>
+
+
+    <div class="row g-4">
+
+
+        {% for result in results %}
+
+        <div class="col-md-6 col-lg-4">
+
+            <div class="card job-card h-100 p-4">
+
+
+                <h4 class="mb-3">
+
+                    {{ result.title }}
+
+                </h4>
+
+
+                <div class="match-number">
+
+                    {{ result.match }}%
+
+                </div>
+
+
+                <div class="text-muted mb-3">
+
+                    Resume Match
+
+                </div>
+
+
+                <div
+                    class="progress mb-4"
+                    style="height: 10px;"
+                >
+
+                    <div
+                        class="progress-bar bg-success"
+                        role="progressbar"
+                        style="width: {{ result.match }}%;"
+                    ></div>
+
+                </div>
+
+
+                <h6>
+
+                    <i class="bi bi-exclamation-circle"></i>
+
+                    Missing Skills
+
+                </h6>
+
+
+                {% if result.missing_skills %}
+
+                <div class="mt-2">
+
+                    {% for skill in result.missing_skills %}
+
+                    <span class="missing-badge">
+
+                        {{ skill }}
+
+                    </span>
+
+                    {% endfor %}
+
+                </div>
+
+                {% else %}
+
+                <p class="text-success mt-2">
+
+                    <i class="bi bi-check-circle-fill"></i>
+
+                    No major missing skills detected.
+
+                </p>
+
+                {% endif %}
+
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+
+    </div>
+
+    {% endif %}
+
+
+    {% endif %}
+
+
+
+    <!-- =================================================
+         INITIAL INFORMATION
+    ================================================== -->
+
+    {% if not section_scores %}
+
+    <div class="card p-4 mt-4">
+
+        <div class="row text-center">
+
+
+            <div class="col-md-4 mb-4">
+
+                <i class="bi bi-file-text fs-1 text-primary"></i>
+
+
+                <h5 class="mt-2">
+
+                    Resume Analysis
+
+                </h5>
+
+
+                <p class="text-muted">
+
+                    Extract skills and important
+                    resume information.
+
+                </p>
+
+            </div>
+
+
+
+            <div class="col-md-4 mb-4">
+
+                <i class="bi bi-cpu fs-1 text-success"></i>
+
+
+                <h5 class="mt-2">
+
+                    NLP Matching
+
+                </h5>
+
+
+                <p class="text-muted">
+
+                    Compare your resume with
+                    different job descriptions.
+
+                </p>
+
+            </div>
+
+
+
+            <div class="col-md-4 mb-4">
+
+                <i class="bi bi-graph-up-arrow fs-1 text-warning"></i>
+
+
+                <h5 class="mt-2">
+
+                    Career Suggestions
+
+                </h5>
+
+
+                <p class="text-muted">
+
+                    Get skill-gap and learning
+                    recommendations.
+
+                </p>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+</div>
+
+
+
+<!-- =====================================================
+     FOOTER
+====================================================== -->
+
+<footer>
+
+    <p class="mb-0">
+
+        Resume Screening & Job Recommendation System
+
+        <br>
+
+        Built with
+
+        <strong>Python</strong>,
+
+        <strong>Flask</strong>,
+
+        <strong>N<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Resume AI Analyzer</title>
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- Bootstrap Icons -->
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    >
+
+    <style>
+
+        body {
+            background-color: #f5f7fb;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #212529;
+        }
+
+        .navbar {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+        }
+
+        .hero {
+            padding: 45px 0 30px;
+        }
+
+        .hero h1 {
+            font-weight: 700;
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.07);
+        }
+
+        .upload-box {
+            border: 2px dashed #ced4da;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            background-color: #fafbfc;
+        }
+
+        .upload-icon {
+            font-size: 50px;
+            color: #0d6efd;
+        }
+
+        textarea {
+            min-height: 250px;
+            resize: vertical;
+        }
+
+        .score-circle {
+            width: 170px;
+            height: 170px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px auto;
+            background-color: #e7f1ff;
+            border: 8px solid #0d6efd;
+        }
+
+        .score-main {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #0d6efd;
+        }
+
+        .section-score {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .skill-badge {
+            display: inline-block;
+            margin: 4px;
+            padding: 8px 13px;
+            border-radius: 20px;
+            background-color: #e7f1ff;
+            color: #0d6efd;
+            font-weight: 500;
+        }
+
+        .missing-badge {
+            display: inline-block;
+            margin: 4px;
+            padding: 8px 13px;
+            border-radius: 20px;
+            background-color: #fff0f0;
+            color: #dc3545;
+            border: 1px solid #f5c2c7;
+        }
+
+        .job-card {
+            transition: transform 0.2s ease;
+        }
+
+        .job-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .match-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #198754;
+        }
+
+        .suggestion-item {
+            padding: 15px;
+            border-left: 4px solid #0d6efd;
+            background-color: #f8f9fa;
+            margin-bottom: 10px;
+            border-radius: 6px;
+        }
+
+        .course-card {
+            border-left: 4px solid #198754;
+            transition: transform 0.2s ease;
+        }
+
+        .course-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-title {
+            color: #6c757d;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .best-job-card {
+            background-color: #ffffff;
+            border-top: 5px solid #198754;
+        }
+
+        footer {
+            margin-top: 50px;
+            padding: 25px;
+            text-align: center;
+            color: #6c757d;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     NAVBAR
+====================================================== -->
+
+<nav class="navbar navbar-expand-lg bg-white">
+
+    <div class="container">
+
+        <a
+            class="navbar-brand text-primary"
+            href="/"
+        >
+
+            <i class="bi bi-robot"></i>
+
+            Resume AI Analyzer
+
+        </a>
+
+    </div>
+
+</nav>
+
+
+
+<!-- =====================================================
+     HERO
+====================================================== -->
+
+<section class="hero">
+
+    <div class="container">
+
+        <div class="text-center">
+
+            <h1>
+
+                Resume Screening & Job Recommendation
+
+            </h1>
+
+            <p class="text-muted mt-2">
+
+                Analyze your resume using NLP and
+                Machine Learning to discover job
+                opportunities and improve your skills.
+
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     MAIN CONTAINER
+====================================================== -->
+
+<div class="container pb-5">
+
+
+    <!-- =================================================
+         ERROR
+    ================================================== -->
+
+    {% if error %}
+
+    <div class="alert alert-danger">
+
+        <i class="bi bi-exclamation-triangle-fill"></i>
+
+        {{ error }}
+
+    </div>
+
+    {% endif %}
+
+
+
+    <!-- =================================================
+         RESUME INPUT
+    ================================================== -->
+
+    <div class="card p-4 mb-4">
+
+        <h4 class="mb-4">
+
+            <i class="bi bi-file-earmark-text"></i>
+
+            Analyze Your Resume
+
+        </h4>
+
+
+        <form
+            method="POST"
+            enctype="multipart/form-data"
+        >
+
+
+            <!-- PDF UPLOAD -->
+
+            <div class="upload-box mb-4">
+
+                <i class="bi bi-file-earmark-pdf upload-icon"></i>
+
+                <h5 class="mt-3">
+
+                    Upload PDF Resume
+
+                </h5>
+
+                <p class="text-muted">
+
+                    Upload your resume in PDF format.
+
+                </p>
+
+                <input
+                    type="file"
+                    name="resume_file"
+                    class="form-control"
+                    accept=".pdf,application/pdf"
+                >
+
+            </div>
+
+
+
+            <!-- OR -->
+
+            <div class="text-center text-muted mb-3">
+
+                — OR —
+
+            </div>
+
+
+
+            <!-- TEXT INPUT -->
+
+            <label
+                for="resume_text"
+                class="form-label fw-bold"
+            >
+
+                Paste Resume Text
+
+            </label>
+
+            <textarea
+                id="resume_text"
+                name="resume_text"
+                class="form-control mb-3"
+                placeholder="Paste your resume text here..."
+            >{{ resume_text }}</textarea>
+
+
+
+            <!-- BUTTON -->
+
+            <button
+                type="submit"
+                class="btn btn-primary btn-lg"
+            >
+
+                <i class="bi bi-cpu"></i>
+
+                Analyze Resume
+
+            </button>
+
+        </form>
+
+    </div>
+
+
+
+    <!-- =================================================
+         UPLOAD SUCCESS
+    ================================================== -->
+
+    {% if uploaded_filename %}
+
+    <div class="alert alert-success">
+
+        <i class="bi bi-check-circle-fill"></i>
+
+        Resume uploaded successfully:
+
+        <strong>
+
+            {{ uploaded_filename }}
+
+        </strong>
+
+    </div>
+
+    {% endif %}
+
+
+
+    <!-- =================================================
+         ANALYSIS RESULTS
+    ================================================== -->
+
+    {% if section_scores %}
+
+
+    <!-- =================================================
+         OVERALL SCORE
+    ================================================== -->
+
+    <div class="card p-4 mb-4 text-center">
+
+        <h3 class="fw-bold">
+
+            <i class="bi bi-bar-chart-fill"></i>
+
+            Overall Resume Score
+
+        </h3>
+
+
+        <div class="score-circle">
+
+            <div class="score-main">
+
+                {{ overall_score }}
+
+            </div>
+
+        </div>
+
+
+        <h5 class="text-muted">
+
+            out of 100
+
+        </h5>
+
+
+        <p class="text-muted mt-2 mb-0">
+
+            Based on profile, skills, education,
+            experience, projects, formatting and
+            job compatibility.
+
+        </p>
+
+    </div>
+
+
+
+    <!-- =================================================
+         SECTION SCORES
+    ================================================== -->
+
+    <div class="card p-4 mb-4">
+
+        <h3 class="fw-bold mb-4">
+
+            <i class="bi bi-clipboard-data"></i>
+
+            Section-wise Resume Score
+
+        </h3>
+
+
+        <div class="row g-4">
+
+
+            {% for section, score in section_scores.items() %}
+
+            <div class="col-md-6 col-lg-4">
+
+                <div class="border rounded p-3 h-100">
+
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        <strong>
+
+                            {{ section }}
+
+                        </strong>
+
+                        <span class="section-score">
+
+                            {{ score }}%
+
+                        </span>
+
+                    </div>
+
+
+                    <div
+                        class="progress mt-3"
+                        style="height: 10px;"
+                    >
+
+                        <div
+                            class="progress-bar"
+                            role="progressbar"
+                            style="width: {{ score }}%;"
+                        ></div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =================================================
+         BEST JOB MATCH
+    ================================================== -->
+
+    {% if best_job %}
+
+    <div class="row g-4 mb-4">
+
+
+        <div class="col-md-6">
+
+            <div class="card best-job-card p-4 text-center h-100">
+
+                <div class="stat-title">
+
+                    BEST JOB MATCH
+
+                </div>
+
+
+                <h2 class="mt-3">
+
+                    {{ best_job }}
+
+                </h2>
+
+
+                <div class="match-number">
+
+                    {{ best_match }}%
+
+                </div>
+
+
+                <p class="text-muted mb-0">
+
+                    Resume-to-job similarity using
+                    TF-IDF and Cosine Similarity.
+
+                </p>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="col-md-6">
+
+            <div class="card p-4 h-100">
+
+                <h4>
+
+                    <i class="bi bi-lightbulb text-warning"></i>
+
+                    Quick Improvement
+
+                </h4>
+
+
+                <p class="text-muted">
+
+                    Focus on these skills to improve
+                    your compatibility with your
+                    best matching role.
+
+                </p>
+
+
+                {% if missing_skills %}
+
+                {% for skill in missing_skills %}
+
+                <span class="missing-badge">
+
+                    {{ skill }}
+
+                </span>
+
+                {% endfor %}
+
+                {% else %}
+
+                <p class="text-success">
+
+                    <i class="bi bi-check-circle-fill"></i>
+
+                    No major missing skills detected.
+
+                </p>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+    {% endif %}
+
+
+
+    <!-- =================================================
+         DETECTED SKILLS
+    ================================================== -->
+
+    {% if extracted_skills %}
+
+    <div class="card p-4 mb-4">
+
+        <h3 class="fw-bold mb-3">
+
+            <i class="bi bi-stars"></i>
+
+            Skills Detected
+
+        </h3>
+
+
+        <p class="text-muted">
+
+            Technical skills identified from your resume.
+
+        </p>
+
+
+        <div>
+
+            {% for skill in extracted_skills %}
+
+            <span class="skill-badge">
+
+                {{ skill }}
+
+            </span>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+
+    <!-- =================================================
+         MISSING SKILLS
+    ================================================== -->
+
+    {% if missing_skills %}
+
+    <div class="card p-4 mb-4">
+
+        <h3 class="fw-bold text-danger mb-3">
+
+            <i class="bi bi-exclamation-circle"></i>
+
+            Skills You Can Improve
+
+        </h3>
+
+
+        <p class="text-muted">
+
+            These skills are associated with your
+            best matching job role but were not
+            detected in your resume.
+
+        </p>
+
+
+        {% for skill in missing_skills %}
+
+        <span class="missing-badge">
+
+            {{ skill }}
+
+        </span>
+
+        {% endfor %}
+
+    </div>
+
+    {% endif %}
+
+
+
+    <!-- =================================================
+         SUGGESTIONS
+    ================================================== -->
+
+    {% if suggestions %}
+
+    <div class="card p-4 mb-4">
+
+        <h3 class="fw-bold mb-4">
+
+            <i class="bi bi-lightbulb-fill text-warning"></i>
+
+            Suggestions to Improve Your Resume
+
+        </h3>
+
+
+        {% for suggestion in suggestions %}
+
+        <div class="suggestion-item">
+
+            <i class="bi bi-arrow-right-circle text-primary"></i>
+
+            {{ suggestion }}
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% endif %}
+
+
+
+    <!-- =================================================
+         RECOMMENDED COURSES
+    ================================================== -->
+
+    {% if course_recommendations %}
+
+    <div class="card p-4 mb-4">
+
+        <h3 class="fw-bold mb-3">
+
+            <i class="bi bi-mortarboard-fill"></i>
+
+            Recommended Learning
+
+        </h3>
+
+
+        <p class="text-muted mb-4">
+
+            Learning resources based on the skills
+            missing from your best job match.
+
+        </p>
+
+
+        <div class="row g-3">
+
+
+            {% for course in course_recommendations %}
+
+            <div class="col-md-6 col-lg-4">
+
+                <div class="course-card border rounded p-3 h-100">
+
+                    <h5>
+
+                        {{ course.course }}
+
+                    </h5>
+
+
+                    <p class="mb-2">
+
+                        <strong>Skill:</strong>
+
+                        {{ course.skill }}
+
+                    </p>
+
+
+                    <p class="text-muted mb-3">
+
+                        <strong>Provider:</strong>
+
+                        {{ course.provider }}
+
+                    </p>
+
+
+                    <a
+                        href="{{ course.url }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="btn btn-outline-success btn-sm"
+                    >
+
+                        <i class="bi bi-box-arrow-up-right"></i>
+
+                        Start Learning
+
+                    </a>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+
+    <!-- =================================================
+         JOB RECOMMENDATIONS
+    ================================================== -->
+
+    {% if results %}
+
+    <div class="mb-4">
+
+        <h3 class="fw-bold">
+
+            <i class="bi bi-briefcase-fill"></i>
+
+            Job Recommendations
+
+        </h3>
+
+
+        <p class="text-muted">
+
+            Job roles are matched using
+            TF-IDF and Cosine Similarity.
+
+        </p>
+
+    </div>
+
+
+    <div class="row g-4">
+
+
+        {% for result in results %}
+
+        <div class="col-md-6 col-lg-4">
+
+            <div class="card job-card h-100 p-4">
+
+
+                <h4 class="mb-3">
+
+                    {{ result.title }}
+
+                </h4>
+
+
+                <div class="match-number">
+
+                    {{ result.match }}%
+
+                </div>
+
+
+                <div class="text-muted mb-3">
+
+                    Resume Match
+
+                </div>
+
+
+                <div
+                    class="progress mb-4"
+                    style="height: 10px;"
+                >
+
+                    <div
+                        class="progress-bar bg-success"
+                        role="progressbar"
+                        style="width: {{ result.match }}%;"
+                    ></div>
+
+                </div>
+
+
+                <h6>
+
+                    <i class="bi bi-exclamation-circle"></i>
+
+                    Missing Skills
+
+                </h6>
+
+
+                {% if result.missing_skills %}
+
+                <div class="mt-2">
+
+                    {% for skill in result.missing_skills %}
+
+                    <span class="missing-badge">
+
+                        {{ skill }}
+
+                    </span>
+
+                    {% endfor %}
+
+                </div>
+
+                {% else %}
+
+                <p class="text-success mt-2">
+
+                    <i class="bi bi-check-circle-fill"></i>
+
+                    No major missing skills detected.
+
+                </p>
+
+                {% endif %}
+
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+
+    </div>
+
+    {% endif %}
+
+
+    {% endif %}
+
+
+
+    <!-- =================================================
+         INITIAL INFORMATION
+    ================================================== -->
+
+    {% if not section_scores %}
+
+    <div class="card p-4 mt-4">
+
+        <div class="row text-center">
+
+
+            <div class="col-md-4 mb-4">
+
+                <i class="bi bi-file-text fs-1 text-primary"></i>
+
+                <h5 class="mt-2">
+
+                    Resume Analysis
+
+                </h5>
+
+                <p class="text-muted">
+
+                    Extract skills and important
+                    resume information.
+
+                </p>
+
+            </div>
+
+
+
+            <div class="col-md-4 mb-4">
+
+                <i class="bi bi-cpu fs-1 text-success"></i>
+
+                <h5 class="mt-2">
+
+                    NLP Matching
+
+                </h5>
+
+                <p class="text-muted">
+
+                    Compare resume content with
+                    different job descriptions.
+
+                </p>
+
+            </div>
+
+
+
+            <div class="col-md-4 mb-4">
+
+                <i class="bi bi-mortarboard fs-1 text-warning"></i>
+
+                <h5 class="mt-2">
+
+                    Career Suggestions
+
+                </h5>
+
+                <p class="text-muted">
+
+                    Identify skill gaps and discover
+                    useful learning resources.
+
+                </p>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+</div>
+
+
+
+<!-- =====================================================
+     FOOTER
+====================================================== -->
+
+<footer>
+
+    <p class="mb-0">
+
+        Resume Screening & Job Recommendation System
+
+        <br>
+
+        Built with
+
+        <strong>Python</strong>,
+
+        <strong>Flask</strong>,
+
+        <strong>NLP</strong> &
+
+        <strong>Machine Learning</strong>
+
+    </p>
+
+</footer>
+
+
+</body>
+
+</html>LP</strong> &
+
+        <strong>Machine Learning</strong>
+
+    </p>
+
+</footer>
+
+
+</body>
+
+</html>
